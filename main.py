@@ -6,12 +6,16 @@ def passescondition(color, bias):
 
 filepath = input('path= ')
 color_bias = float(input('color_bias(percentage)= '))
-print('position on screen:')
-screen_x = int(input('x= '))
-screen_y = int(input('y= '))
-print('size on screen:')
-screen_w = int(input('width= '))
-screen_h = int(input('height= '))
+print('top left position:')
+input('press enter when ready')
+pos1 = pyautogui.position()
+screen_x = pos1[0]
+screen_y = pos1[1]
+print('bottom right position:')
+input('press enter when ready')
+pos2 = pyautogui.position()
+screen_w = pos2[0]-screen_x
+screen_h = pos2[1]-screen_y
 print('render multiplier:')
 res_m = float(input('mult= '))
 
@@ -19,26 +23,28 @@ image = Image.open(filepath)
 image_width = image.size[0]
 image_height = image.size[1]
 res_w = int(screen_w*res_m)
-res_h = int(screen_w*res_m)
-pixel_ratio = image_width/res_w
-draw_ratio = screen_w/res_w
+res_h = int(screen_h*res_m)
+pixel_ratio_x = image_width/res_w
+pixel_ratio_y = image_height/res_h
+draw_ratio_x = screen_w/res_w
+draw_ratio_y = screen_h/res_h
 
 
 pixelArray = image.load()
 points = []
 for y in range(res_h):
-    py = y*pixel_ratio
-    dy = y*draw_ratio
+    py = y*pixel_ratio_y
+    dy = y*draw_ratio_y
     sets = []
     index = -1
     for x in range(res_w):
-        px = x*pixel_ratio
-        dx = x*draw_ratio
+        px = x*pixel_ratio_x
+        dx = x*draw_ratio_x
         if index == -1:#if it does not have a start
-            if passescondition(pixelArray[dx,dy], color_bias):
+            if passescondition(pixelArray[px,py], color_bias):
                 index = x
         else:#if it has a start
-            if not passescondition(pixelArray[dx,dy], color_bias):#if it is not what is to be drawn
+            if not passescondition(pixelArray[px,py], color_bias):#if it is not what is to be drawn
                 sets.append([y, index, x-1])
                 index = -1
         if index != -1:
@@ -53,8 +59,8 @@ for sets in points:
     print('row [{0}/{1}]'.format(str(y_index+1), int(res_h)))
     for set in sets:
         ypos = set[0]
-        y_index = ypos
+        y_index = ypos+1
         start = set[1]
         end = set[2]
-        pyautogui.moveTo(screen_x+start*draw_ratio, screen_y+ypos*draw_ratio)
-        pyautogui.dragTo(screen_x+end*draw_ratio, screen_y+ypos*draw_ratio)
+        pyautogui.moveTo(screen_x+start*draw_ratio_x, screen_y+ypos*draw_ratio_y)
+        pyautogui.dragTo(screen_x+end*draw_ratio_x, screen_y+ypos*draw_ratio_y)
