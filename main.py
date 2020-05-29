@@ -1,8 +1,18 @@
 import pyautogui
+import time
 from PIL import Image
+
+aver_calc_num = 8
 
 def passescondition(color, bias):
     return (color[0]+color[1]+color[2])/3<bias*255
+
+def time_convert(sec):
+    mins = sec // 60
+    sec = sec % 60
+    hours = mins // 60
+    mins = mins % 60
+    return [int(hours),int(mins),int(sec)]
 
 filepath = input('path= ')
 color_bias = float(input('color_bias(percentage)= '))
@@ -53,14 +63,28 @@ for y in range(res_h):
                 index = -1
     if len(sets) > 0:
         points.append(sets)
-
-y_index = 0
-for sets in points:
-    print('row [{0}/{1}]'.format(str(y_index+1), int(res_h)))
+seconds = []
+for i in range(len(points)):
+    sets = points[i] 
+    starttime = time.time()
+    
     for set in sets:
         ypos = set[0]
-        y_index = ypos+1
         start = set[1]
         end = set[2]
         pyautogui.moveTo(screen_x+start*draw_ratio_x, screen_y+ypos*draw_ratio_y)
         pyautogui.dragTo(screen_x+end*draw_ratio_x, screen_y+ypos*draw_ratio_y)
+    endtime = time.time()
+    time_lapsed = endtime - starttime
+    seconds.insert(0,time_lapsed)
+    if(len(seconds)>aver_calc_num):
+        seconds.pop(aver_calc_num-1)
+    totalsec_part = 0
+    for sec in seconds:
+        totalsec_part+=sec
+    avgsec = totalsec_part/aver_calc_num
+    remainingnum = len(points) - i-1
+    totalsec = remainingnum * avgsec
+    timestr = time_convert(totalsec)
+    print('row [{0}/{1}] {2}:{3}'.format(str(i+1), int(res_h), timestr[1], timestr[2]))
+
